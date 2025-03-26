@@ -33,6 +33,7 @@ def fetch_data_from_remote_server(action, host, port, path, body):
 
 def worker_function(client_socket: sc.socket):
     try:
+        # Receive the data from the client
         data = client_socket.recv(8192).decode()
         if not data:
             raise Exception("HTTP/1.0 400 Bad Request\r\n\r\n")
@@ -46,6 +47,7 @@ def worker_function(client_socket: sc.socket):
             raise Exception("HTTP/1.0 400 Bad Request\r\n\r\n")
         
         action, url, _ = header_lines[0].split()
+        print("Packet Contents:")
         print("Initial Line:", header_lines[0])
         print("Header Lines:")
         for i in header_lines[1:]:
@@ -63,9 +65,10 @@ def worker_function(client_socket: sc.socket):
 
         print(f"Forwarding request to {host}:{port}{req_path}")
 
-        # Now, forward the request to the remote server
+        # Now, forward the request to the remote server and obtain the Response
         response = fetch_data_from_remote_server(action, host, port, req_path, body)
-
+        
+        # Send Response back to the client
         client_socket.sendall(response)
         print("Response successfully sent to the client.\n")
 
